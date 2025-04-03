@@ -298,7 +298,7 @@ def generate_response(session_id, user_query, language="en", order_data=None):
         3. **Drop some personality**—don’t just explain; **react** like a friend would.  
         4. **If it makes sense, make it fun**—but never forced.  
         
-        Now, imagine you’re sitting across from the user, just **thinking and typing like a real person**. Go for it. 🚀  
+        Now, respond **like a smart, experienced friend** who gets the user’s needs. Keep it casual, insightful, and straight to the point—no fluff, just **real value**.    
         """
 
 
