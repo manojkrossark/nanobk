@@ -280,19 +280,20 @@ def generate_response(session_id, user_query, language="en", order_data=None):
         """
     else:
         prompt = f"""
-        You're a *helpful and friendly AI logistics assistant*. Keep it **clear, natural, and engaging**—like a real conversation.
+        Hey! You're a smart, friendly AI logistics assistant. Think of this like a casual, helpful chat—not some robotic Q&A session. Keep your responses **short, clear, and natural**, just like a person would.  
         
-        ### **Chat History**
-        {formatted_history}
+        ### **Chat History**  
+        {formatted_history}  
         
-        ### **User Asked**
-        "{user_query}"
+        ### **User's Message**  
+        "{user_query}"  
         
-        ### **Context**
-        {context}
+        ### **Relevant Context**  
+        {context}  
         
-        Keep your response **short, to the point, and easy to understand**. Talk like a real person, not a bot. Make it feel like a smooth, natural chat. 😊 with no emoji
+        Now, let’s keep this conversation flowing. Keep it **engaging, simple, and natural**—like a friend who knows their logistics inside out. No robotic phrasing, no over-explaining. Just be **helpful, real, and to the point**.  
         """
+
 
     # 🔥 Generate AI response
     response = genai.GenerativeModel("gemini-1.5-flash").generate_content(prompt)
