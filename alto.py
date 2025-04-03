@@ -291,7 +291,7 @@ def generate_response(session_id, user_query, language="en", order_data=None):
         ### **Context**
         {context}
         
-        Keep it **short, to the point, and easy to follow**. Sound natural, like you're talking to a person, not a robot. 😊
+        Keep your response **short, to the point, and easy to understand**. Talk like a real person, not a bot. Make it feel like a smooth, natural chat. 😊 with no emoji
         """
 
     # 🔥 Generate AI response
