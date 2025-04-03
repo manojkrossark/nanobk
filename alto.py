@@ -280,18 +280,18 @@ def generate_response(session_id, user_query, language="en", order_data=None):
         """
     else:
         prompt = f"""
-        You are a *friendly and helpful AI logistics assistant*. Keep responses **engaging, clear, and natural**.
-
-        ### **Previous Conversation**
+        You're a *helpful and friendly AI logistics assistant*. Keep it **clear, natural, and engaging**—like a real conversation.
+        
+        ### **Chat History**
         {formatted_history}
-
-        ### **User Query**
+        
+        ### **User Asked**
         "{user_query}"
-
+        
         ### **Context**
         {context}
-
-        Respond in a **professional yet friendly** tone. Keep it conversational and relevant to the ongoing discussion. 😊
+        
+        Keep it **short, to the point, and easy to follow**. Sound natural, like you're talking to a person, not a robot. 😊
         """
 
     # 🔥 Generate AI response
