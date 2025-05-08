@@ -136,22 +136,29 @@ def get_shipment(order_id):
 def get_conversation(session_id):
     conn = get_db_connection()
     if conn is None:
-        return [], None  # Return empty list and no order ID
+        return [], None
 
     try:
         with conn.cursor() as cur:
+            # Fetch all messages and roles for the session
             cur.execute("SELECT message, role FROM messages WHERE session_id = %s ORDER BY timestamp;", (session_id,))
             result = cur.fetchall()
-            
-            conversation = [(msg[0], msg[1]) for msg in result] if result else []
+            conversation = [(msg, role) for msg, role in result] if result else []
 
-            # 🔹 Extract last mentioned order ID from conversation
+            # Fetch all valid order IDs from the orders table
+            cur.execute("SELECT order_id FROM orders;")
+            valid_order_ids = {row[0] for row in cur.fetchall()}
+
+            # Find the most recent valid order_id mentioned in conversation
             last_order_id = None
             for msg, role in reversed(conversation):
-                if msg.isdigit():  # Assuming order IDs are numeric
-                    last_order_id = msg
+                for word in msg.split():
+                    if word in valid_order_ids:
+                        last_order_id = word
+                        break
+                if last_order_id:
                     break
-            
+
             return conversation, last_order_id
     except Exception as e:
         print(f"❌ Error retrieving messages: {e}")
