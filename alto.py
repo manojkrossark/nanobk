@@ -185,26 +185,26 @@ def generate_response(session_id, user_query, language="en", student_data=None):
 
     if user_query.lower() in greetings:
         return random.choice([
-            "Hi, this is Adya from ABC University. It’s great to connect with you! 😊",
+            "Hi, this is Adya from ABC University. It’s great to connect with you! ",
             "Hello! I’m Adya, your student assistant from ABC University. Excited to chat!",
         ])
 
     if user_query.lower() in farewells:
         return random.choice([
             "It was lovely speaking with you. Hope to welcome you to ABC University soon!",
-            "Thanks for your time! Wishing you all the best in your journey ahead. 😊"
+            "Thanks for your time! Wishing you all the best in your journey ahead."
         ])
 
     # Short contextual label (replace order with interest-based info if needed)
     context = ""
     if student_data:
         context += f"""
-        🎓 **Student Interest:** {student_data.get('program_interest')}
-        🕒 **Course Duration:** {student_data.get('duration')}
-        📘 **Highlights:** {student_data.get('highlights')}
-        ✅ **Eligibility:** {student_data.get('eligibility')}
-        💼 **Career Outcomes:** {student_data.get('careers')}
-        🎁 **Scholarships & Support:** {student_data.get('support')}
+         **Student Interest:** {student_data.get('program_interest')}
+        **Course Duration:** {student_data.get('duration')}
+        **Highlights:** {student_data.get('highlights')}
+        **Eligibility:** {student_data.get('eligibility')}
+        **Career Outcomes:** {student_data.get('careers')}
+        **Scholarships & Support:** {student_data.get('support')}
         """
 
     formatted_history = "\n".join(
@@ -296,4 +296,4 @@ def read_root():
 # ✅ Start the server
 if __name__ == "__main__":
     create_tables()
-    uvicorn.run("alto:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("alto_1updated:app", host="127.0.0.1", port=8000, reload=True)
