@@ -185,13 +185,13 @@ def generate_response(session_id, user_query, language="en", student_data=None):
 
     if user_query.lower() in greetings:
         return random.choice([
-            "Hi, this is Adya from ABC University. It’s great to connect with you! ",
-            "Hello! I’m Adya, your student assistant from ABC University. Excited to chat!",
+            "Hi, this is Adya from Vels University. It’s great to connect with you! ",
+            "Hello! I’m Adya, your student assistant from Vels University. Excited to chat!",
         ])
 
     if user_query.lower() in farewells:
         return random.choice([
-            "It was lovely speaking with you. Hope to welcome you to ABC University soon!",
+            "It was lovely speaking with you. Hope to welcome you to Vels University soon!",
             "Thanks for your time! Wishing you all the best in your journey ahead."
         ])
 
@@ -212,7 +212,7 @@ def generate_response(session_id, user_query, language="en", student_data=None):
     )
 
     prompt = f"""
-    You are Adya, a warm and engaging AI voice assistant from ABC University.
+    You are Adya, a warm and engaging AI voice assistant from Vels University.
 
     You are calling prospective students to guide them through:
     - Academic programs
