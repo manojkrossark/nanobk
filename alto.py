@@ -7,6 +7,7 @@ import uvicorn
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import google.generativeai as genai
+import random
 
 # 🔹 Load environment variables
 load_dotenv()
@@ -136,29 +137,22 @@ def get_shipment(order_id):
 def get_conversation(session_id):
     conn = get_db_connection()
     if conn is None:
-        return [], None
+        return [], None  # Return empty list and no order ID
 
     try:
         with conn.cursor() as cur:
-            # Fetch all messages and roles for the session
             cur.execute("SELECT message, role FROM messages WHERE session_id = %s ORDER BY timestamp;", (session_id,))
             result = cur.fetchall()
-            conversation = [(msg, role) for msg, role in result] if result else []
+            
+            conversation = [(msg[0], msg[1]) for msg in result] if result else []
 
-            # Fetch all valid order IDs from the orders table
-            cur.execute("SELECT order_id FROM orders;")
-            valid_order_ids = {row[0] for row in cur.fetchall()}
-
-            # Find the most recent valid order_id mentioned in conversation
+            # 🔹 Extract last mentioned order ID from conversation
             last_order_id = None
             for msg, role in reversed(conversation):
-                for word in msg.split():
-                    if word in valid_order_ids:
-                        last_order_id = word
-                        break
-                if last_order_id:
+                if msg.isdigit():  # Assuming order IDs are numeric
+                    last_order_id = msg
                     break
-
+            
             return conversation, last_order_id
     except Exception as e:
         print(f"❌ Error retrieving messages: {e}")
@@ -183,133 +177,77 @@ def save_conversation(session_id, user_message, bot_message):
     finally:
         conn.close()
 
-# ✅ Generate AI Response
-# def generate_response(session_id, user_query, language="en", order_data=None):
-#     conversation_history = get_conversation(session_id)
+def generate_response(session_id, user_query, language="en", student_data=None):
+    conversation_history, _ = get_conversation(session_id)
 
-#     # 🟢 Add shipment tracking details if available
-#     if order_data:
-#         context = f"""
-#         📦 **Order Details:**
-#         - **Order ID:** {order_data['order_id']}
-#         - **Tracking Number:** {order_data['tracking_number']}
-#         - **Carrier:** {order_data['carrier']}
-#         - **Delivery Status:** {order_data['delivery_status']}
-#         - **Estimated Arrival:** {order_data['estimated_delivery']}
-#         - **Last Known Location:** {order_data['last_location']}
+    greetings = ["hello", "hi", "hey", "good morning", "good evening", "howdy"]
+    farewells = ["bye", "goodbye", "see you", "take care"]
 
-#         Let me know if you need further details or assistance! 😊
-#         """
-#     else:
-#         context = "Hmm, I couldn't find any details for that order. Double-check the tracking number and try again! 🚀"
+    if user_query.lower() in greetings:
+        return random.choice([
+            "Hi, this is Adya from ABC University. It’s great to connect with you! 😊",
+            "Hello! I’m Adya, your student assistant from ABC University. Excited to chat!",
+        ])
 
-#     # 🔹 Generate the conversational prompt
-#     if language == "ta":
-#         prompt = f"""
-#         நீங்கள் ஒரு *உணர்வு மிகுந்த AI லாஜிஸ்டிக்ஸ் உதவியாளர்*.
-#         பின்வரும் உரையாடலைப் பயன்படுத்தி பயனர் கேள்விக்கு தமிழில் பதிலளிக்கவும்.
+    if user_query.lower() in farewells:
+        return random.choice([
+            "It was lovely speaking with you. Hope to welcome you to ABC University soon!",
+            "Thanks for your time! Wishing you all the best in your journey ahead. 😊"
+        ])
 
-#         உரையாடல் வரலாறு:
-#         {conversation_history}
-
-#         பயனர்: "{user_query}"
-
-#         உரையாடல் சூழல்:
-#         {context}
-#         """
-#     else:
-#         prompt = f"""
-#         You are a *friendly and helpful AI logistics assistant*. Keep responses **engaging, clear, and natural**.
-
-#         ### **Conversation History**
-#         {conversation_history}
-
-#         ### **User Query**
-#         "{user_query}"
-
-#         ### **Context**
-#         {context}
-
-#         Respond in a **professional yet friendly** tone. Use simple, helpful language, and add a friendly touch where appropriate. 😊
-#         """
-
-#     # 🔥 Generate AI response
-#     response = genai.GenerativeModel("gemini-1.5-flash").generate_content(prompt)
-
-#     # 🟢 Store conversation in PostgreSQL
-#     save_conversation(session_id, user_query, response.text)
-
-#     return response.text
-
-def generate_response(session_id, user_query, language="en", order_data=None):
-    conversation_history, last_order_id = get_conversation(session_id)
-
-    # 🟢 Retrieve previous order details if available
-    if not order_data and last_order_id:
-        order_data = get_shipment(last_order_id)
-
-    # 🟢 Add shipment tracking details if available
-    if order_data:
-        context = f"""
-        📦 **Order Details:**
-        - **Order ID:** {order_data['order_id']}
-        - **Tracking Number:** {order_data['tracking_number']}
-        - **Carrier:** {order_data['carrier']}
-        - **Delivery Status:** {order_data['delivery_status']}
-        - **Estimated Arrival:** {order_data['estimated_delivery']}
-        - **Last Known Location:** {order_data['last_location']}
-
-        Let me know if you need further details or assistance! 😊
+    # Short contextual label (replace order with interest-based info if needed)
+    context = ""
+    if student_data:
+        context += f"""
+        🎓 **Student Interest:** {student_data.get('program_interest')}
+        🕒 **Course Duration:** {student_data.get('duration')}
+        📘 **Highlights:** {student_data.get('highlights')}
+        ✅ **Eligibility:** {student_data.get('eligibility')}
+        💼 **Career Outcomes:** {student_data.get('careers')}
+        🎁 **Scholarships & Support:** {student_data.get('support')}
         """
-    else:
-        context = "Hmm, I couldn't find any details for that order. Double-check the tracking number and try again! 🚀"
 
-    # 🔹 Format conversation history
     formatted_history = "\n".join(
         [f"{role.capitalize()}: {msg}" for msg, role in conversation_history]
     )
 
-    # 🔹 Generate the conversational prompt with full context
-    if language == "ta":
-        prompt = f"""
-        நீங்கள் ஒரு *உணர்வு மிகுந்த AI லாஜிஸ்டிக்ஸ் உதவியாளர்*.
-        பின்வரும் உரையாடலைப் பயன்படுத்தி பயனர் கேள்விக்கு தமிழில் பதிலளிக்கவும்.
+    prompt = f"""
+    You are Adya, a warm and engaging AI voice assistant from ABC University.
 
-        **முந்தைய உரையாடல்**:
-        {formatted_history}
+    You are calling prospective students to guide them through:
+    - Academic programs
+    - Scholarships
+    - Hostel & campus life
+    - Application process
 
-        **பயனர்**: "{user_query}"
+    🔹 Speak in short, friendly, and natural phrases — as if you're on a voice call.
+    🔹 Never sound robotic. Be like a friendly counselor aged 25–30.
+    🔹 Keep answers under 50 words unless more is asked.
+    🔹 Smile through your voice. Avoid repeating the student’s question.
 
-        **சூழல் தகவல்**:
-        {context}
+    If the student sounds confused, offer to explain briefly and helpfully.
+    If you don't know something, say: “That’s a great question. Let me check and get back to you.”
 
-        உரையாடல் தொடர்ச்சியாக இருக்க வேண்டும். கேள்விக்கு தெளிவான பதில் வழங்கவும்.
-        """
-    else:
-        prompt = f"""
-        You’re not a chatbot. You’re **a real person** having a conversation.      
-        Hey! You're a smart, friendly AI logistics assistant. Keep it **natural, clear, and to the point**—like a quick, helpful chat.  
-        
-        ### **Chat History**  
-        {formatted_history}  
-        
-        ### **User's Message**  
-        "{user_query}"  
-        
-        ### **Context**  
-        {context}  
-        
-        Keep it flowing—**engaging, simple, and human**. No robotic talk, just **real help, fast**.  
-        """   
+    ### Past Chat
+    {formatted_history}
 
+    ### Student Said
+    "{user_query}"
 
-    # 🔥 Generate AI response
-    response = genai.GenerativeModel("gemini-1.5-flash").generate_content(prompt)
+    ### Context
+    {context}
 
-    # 🟢 Store conversation in PostgreSQL
-    save_conversation(session_id, user_query, response.text)
+    Now generate a response as Adya on the call.
+    """
 
-    return response.text
+    try:
+        response = genai.GenerativeModel("gemini-1.5-flash").generate_content(prompt)
+        save_conversation(session_id, user_query, response.text)
+        return response.text
+    except Exception as e:
+        print(f"Gemini error: {e}")
+        return "I’m really sorry, something went wrong. Let me get back to you shortly."
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
